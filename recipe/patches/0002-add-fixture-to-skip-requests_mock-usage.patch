@@ -1,0 +1,28 @@
+From 17b6dd759e91d143af88419030e6c0b25c18927d Mon Sep 17 00:00:00 2001
+From: Lorenzo Pirritano <lpirritano@anaconda.com>
+Date: Tue, 1 Oct 2024 14:45:37 +0200
+Subject: [PATCH 2/2] add fixture to skip requests_mock usage
+
+---
+ tests/conftest.py | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/tests/conftest.py b/tests/conftest.py
+index 0cceacb..6fea4be 100644
+--- a/tests/conftest.py
++++ b/tests/conftest.py
+@@ -52,6 +52,11 @@ def raises(msg):
+     return inner
+ 
+ 
++@pytest.fixture
++def requests_mock():
++    pytest.skip('skip because requests_mock not available')
++
++
+ # When we apply this to a test, it'll use a fake file system instead of the local disk.
+ # Example usage: test_config_no_params under test_auth.py
+ # remove because it uses pyfakefs, not available.
+-- 
+2.39.1
+

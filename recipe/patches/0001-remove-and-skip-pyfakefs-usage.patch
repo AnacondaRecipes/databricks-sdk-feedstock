@@ -1,0 +1,81 @@
+From 79792176792ef7cd75c2af02e353d785f4ad9c03 Mon Sep 17 00:00:00 2001
+From: Lorenzo Pirritano <lpirritano@anaconda.com>
+Date: Tue, 1 Oct 2024 14:33:18 +0200
+Subject: [PATCH 1/2] remove and skip pyfakefs usage
+
+---
+ tests/conftest.py  | 18 ++++++++++--------
+ tests/test_auth.py |  2 ++
+ tests/test_core.py |  1 +
+ 3 files changed, 13 insertions(+), 8 deletions(-)
+
+diff --git a/tests/conftest.py b/tests/conftest.py
+index 0f415ec..0cceacb 100644
+--- a/tests/conftest.py
++++ b/tests/conftest.py
+@@ -3,7 +3,8 @@ import os
+ import platform
+ 
+ import pytest as pytest
+-from pyfakefs.fake_filesystem_unittest import Patcher
++# remove because it uses pyfakefs, not available.
++# from pyfakefs.fake_filesystem_unittest import Patcher
+ 
+ from databricks.sdk.core import Config
+ from databricks.sdk.credentials_provider import credentials_strategy
+@@ -53,15 +54,16 @@ def raises(msg):
+ 
+ # When we apply this to a test, it'll use a fake file system instead of the local disk.
+ # Example usage: test_config_no_params under test_auth.py
+-@pytest.fixture
+-def fake_fs():
+-    with Patcher() as patcher:
++# remove because it uses pyfakefs, not available.
++# @pytest.fixture
++# def fake_fs():
++#     with Patcher() as patcher:
+ 
+-        # Include the tests directory in the fake filesystem
+-        test_data_path = __tests__
+-        patcher.fs.add_real_directory(test_data_path)
++#         # Include the tests directory in the fake filesystem
++#         test_data_path = __tests__
++#         patcher.fs.add_real_directory(test_data_path)
+ 
+-        yield patcher.fs # This will return a fake file system
++#         yield patcher.fs # This will return a fake file system
+ 
+ 
+ def set_home(monkeypatch, path):
+diff --git a/tests/test_auth.py b/tests/test_auth.py
+index cd8f3cf..79767b2 100644
+--- a/tests/test_auth.py
++++ b/tests/test_auth.py
+@@ -1,3 +1,4 @@
++from pytest import mark
+ # These are auto-generated tests for Unified Authentication
+ # In case of editing this file, make sure the change is propagated to all Databricks SDK codebases
+ from databricks.sdk.core import Config
+@@ -12,6 +13,7 @@ default_auth_base_error_message = \
+ 
+ # This test uses the fake file system to avoid interference from local default profile.
+ @raises(default_auth_base_error_message)
++@mark.skip("uses pyfakefs, not available")
+ def test_config_no_params(fake_fs):
+     Config()
+ 
+diff --git a/tests/test_core.py b/tests/test_core.py
+index d54563d..c297436 100644
+--- a/tests/test_core.py
++++ b/tests/test_core.py
+@@ -273,6 +273,7 @@ def test_config_workspace_is_not_accounts_host(config):
+ 
+ 
+ # This test uses the fake file system to avoid interference from local default profile.
++@pytest.mark.skip("uses pyfakefs, not available")
+ def test_config_can_be_subclassed(fake_fs):
+ 
+     class DatabricksConfig(Config):
+-- 
+2.39.1
+
