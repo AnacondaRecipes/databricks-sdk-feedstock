@@ -14,6 +14,7 @@ source:
     sha256: ac727d662c51dc9d1ac871429cbcba8ea354227dbd72d51bd65715be3cb33fe2
     folder: gh_src
     patches:
+      # pyfakefs not available
       - patches/0001-remove-and-skip-pyfakefs-usage.patch
       # requests-mock not available
       - patches/0002-add-fixture-to-skip-requests_mock-usage.patch
@@ -40,6 +41,15 @@ requirements:
     - ipywidgets >=8,<9
     - ipython >=8,<9
 
+{% set tests_to_skip = "" %}
+# skip test_init_file_contents because wants to verify the hash of
+# the source file "databricks/__init__.py", not relevant for us.
+{% set tests_to_skip = tests_to_skip + " test_init_file_contents" %}
+# skip test_github_oidc_flow_works_with_azure on osx
+# because of connection broken due to our settings
+# on our osx machines
+{% set tests_to_skip = tests_to_skip + " or test_github_oidc_flow_works_with_azure" %}  # [osx]
+
 test:
   imports:
     - databricks
@@ -59,9 +69,7 @@ test:
   commands:
     - pip check
     - cd gh_src
-    # skip test_init_file_contents because wants to verify the hash of
-    # the source file "databricks/__init__.py", not relevant for us.
-    - pytest tests -vv -m "not integration and not benchmark" -k "not test_init_file_contents"
+    - pytest tests -vv -m "not integration and not benchmark" -k "not ({{ tests_to_skip }})"
 
 about:
   home: https://github.com/databricks/databricks-sdk-py
