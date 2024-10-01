@@ -15,8 +15,8 @@ source:
     folder: gh_src
     patches:
       - patches/0001-remove-and-skip-pyfakefs-usage.patch
-      # requests-mock not available for py312
-      - patches/0002-add-fixture-to-skip-requests_mock-usage.patch  # [py>311]
+      # requests-mock not available
+      - patches/0002-add-fixture-to-skip-requests_mock-usage.patch
 
 build:
   number: 0
@@ -54,8 +54,8 @@ test:
     - pytest-mock
     # pyfakefs not available
     # - pyfakefs
-    # requests-mock not available for py312
-    - requests-mock  # [py<312]
+    # requests-mock not available
+    # - requests-mock
   commands:
     - pip check
     - cd gh_src
