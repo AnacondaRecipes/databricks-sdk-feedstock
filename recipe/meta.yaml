@@ -1,45 +1,87 @@
 {% set name = "databricks-sdk" %}
-{% set version = "0.32.3" %}
-{% set sha256 = "bdb8acef3d79e83f05e7fca6cd6128b2b46a4bb4de240374c70050b5f029d4f2" %}
+{% set version = "0.33.0" %}
+{% set sha256 = "6a421ad1eef49df3e7fff95ae08ef9b43ddb0dbd3a6f0147b1a621c6249b8338" %}
 
 package:
   name: {{ name|lower }}
   version: {{ version }}
 
 source:
-  url: https://pypi.io/packages/source/{{ name[0] }}/{{ name }}/{{ name.replace('-', '_') }}-{{ version }}.tar.gz
-  sha256: {{ sha256 }}
+  - url: https://pypi.io/packages/source/{{ name[0] }}/{{ name }}/{{ name.replace('-', '_') }}-{{ version }}.tar.gz
+    sha256: {{ sha256 }}
+  # use GH release archive for tests (v0.33.0: they forgot to add conftest.py, clock.py, and __init__.py)
+  - url: https://github.com/databricks/databricks-sdk-py/archive/refs/tags/v{{ version }}.tar.gz
+    sha256: ac727d662c51dc9d1ac871429cbcba8ea354227dbd72d51bd65715be3cb33fe2
+    folder: gh_src
+    patches:
+      # requests-mock not available
+      - patches/0001-add-fixture-to-skip-requests_mock-usage.patch
 
 build:
-  noarch: python
-  script: {{ PYTHON }} -m pip install . -vv
   number: 0
+  skip: true  # [py<37]
+  script: {{ PYTHON }} -m pip install . --no-deps --no-build-isolation -vv
 
 requirements:
+  build:
+    - patch     # [not win]
+    - m2-patch  # [win]
   host:
-    - python >=3.7
+    - python
     - pip
+    - setuptools
+    - wheel
   run:
-    - python >=3.7
+    - python
     - requests >=2.28.1,<3
-    - google-auth >=2.0,<3
+    - google-auth >=2.0,<3a0
+  run_constrained:
+    - ipywidgets >=8,<9
+    - ipython >=8,<9
+
+{% set tests_to_skip = "" %}
+# skip test_init_file_contents because wants to verify the hash of
+# the source file "databricks/__init__.py", not relevant for us.
+{% set tests_to_skip = tests_to_skip + " test_init_file_contents" %}
+# skip test_github_oidc_flow_works_with_azure on osx
+# because of connection broken due to our settings
+# on our osx machines
+{% set tests_to_skip = tests_to_skip + " or test_github_oidc_flow_works_with_azure" %}  # [osx]
 
 test:
   imports:
     - databricks
     - databricks.sdk
-  commands:
-    - pip check
+  source_files:
+    - gh_src/tests
   requires:
     - pip
+    - pytest
+    # setup.py#L17-L20
+    - pytest-xdist
+    - pytest-mock
+    - pyfakefs
+    # requests-mock not available
+    # - requests-mock
+  commands:
+    - pip check
+    - cd gh_src
+    - pytest tests -vv -m "not integration and not benchmark" -k "not ({{ tests_to_skip }})"
 
 about:
   home: https://github.com/databricks/databricks-sdk-py
-  summary: Databricks SDK for Python (Experimental)
   license: Apache-2.0
+  license_family: Apache
   license_file:
     - LICENSE
     - NOTICE
+  summary: Databricks SDK for Python (Experimental)
+  description: |
+    The Databricks SDK for Python includes functionality to accelerate
+    development with Python for the Databricks Lakehouse. It covers all
+    public Databricks REST API operations.
+  doc_url: https://databricks-sdk-py.readthedocs.io
+  dev_url: https://github.com/databricks/databricks-sdk-py
 
 extra:
   recipe-maintainers:
