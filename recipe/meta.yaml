@@ -14,8 +14,6 @@ source:
     sha256: ac727d662c51dc9d1ac871429cbcba8ea354227dbd72d51bd65715be3cb33fe2
     folder: gh_src
     patches:
-      # pyfakefs not available
-      - patches/0001-remove-and-skip-pyfakefs-usage.patch
       # requests-mock not available
       - patches/0002-add-fixture-to-skip-requests_mock-usage.patch
 
@@ -62,8 +60,7 @@ test:
     # setup.py#L17-L20
     - pytest-xdist
     - pytest-mock
-    # pyfakefs not available
-    # - pyfakefs
+    - pyfakefs
     # requests-mock not available
     # - requests-mock
   commands:
