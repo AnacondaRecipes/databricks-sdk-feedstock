@@ -15,7 +15,7 @@ source:
     folder: gh_src
     patches:
       # requests-mock not available
-      - patches/0002-add-fixture-to-skip-requests_mock-usage.patch
+      - patches/0001-add-fixture-to-skip-requests_mock-usage.patch
 
 build:
   number: 0
